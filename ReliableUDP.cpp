@@ -115,6 +115,7 @@ private:
 };
 
 // ----------------------------------------------
+int n = 0;
 
 int main(int argc, char* argv[])
 {
@@ -169,11 +170,10 @@ int main(int argc, char* argv[])
 	float statsAccumulator = 0.0f;
 
 	FlowControl flowControl;
-
 	while (true)
 	{
 		// update flow control
-
+		
 		if (connection.IsConnected())
 			flowControl.Update(DeltaTime, connection.GetReliabilitySystem().GetRoundTripTime() * 1000.0f);
 
@@ -207,17 +207,32 @@ int main(int argc, char* argv[])
 		while (sendAccumulator > 1.0f / sendRate)
 		{
 			unsigned char packet[PacketSize];
+
+
 			memset(packet, 0, sizeof(packet));
+			packet[0] = 'A';
+			packet[1] = 'B';
+
+			if (mode == Client) {
+				sprintf_s((char*)packet, sizeof(packet), "Hello World %d", n++);
+			}
+
 			connection.SendPacket(packet, sizeof(packet));
 			sendAccumulator -= 1.0f / sendRate;
 		}
+
 
 		while (true)
 		{
 			unsigned char packet[256];
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
-			if (bytes_read == 0)
+			if (bytes_read == 0) {
 				break;
+			}
+			else {
+				printf("Got bytes %s\n", packet);
+			}
+			
 		}
 
 		// show packets that were acked this frame
